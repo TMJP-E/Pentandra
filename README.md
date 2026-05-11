@@ -124,7 +124,7 @@ Cada commit debe ser escrito con la siguiente estructura:
 <footer>*
 ```
 
-Los elementos marcados con `*` son opcionales, el concepto debe describir brevemente cuales fueron los cambios principales, en caso de contar con varios cambios, realizar una descripcion dedicada.
+Los elementos marcados con `*` son opcionales, el concepto debe describir brevemente cuales fueron los cambios principales y siempre inicia con un verbo, en caso de contar con varios cambios, realizar una descripcion dedicada.
 
 Los tipos de commits admitidos son los siguientes:
 
