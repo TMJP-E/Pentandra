@@ -38,11 +38,11 @@ Pentandra permite crear grafos en pantalla con vertices y aristas, indicar nombr
 
 ### Sistema
 
-Pentandra debe utilizar [Python](https://www.python.org/) como tecnologia para la logica de negocio.
+Pentandra debe utilizar [Python](https://docs.python.org/3/tutorial/index.html) como tecnologia para la logica de negocio.
 
-Pentandra debe utilizar la libreria [NetworkX](https://networkx.org/en/) para el manejo de grafos.
+Pentandra debe utilizar la libreria [NetworkX](https://networkx.org/documentation/stable/tutorial.html) para el manejo de grafos.
 
-Pentandra debe utilizar [Qt](https://www.qt.io/) como tecnologia para la interfaz visual.
+Pentandra debe utilizar [Qt](https://doc.qt.io/qtforpython-6/) como tecnologia para la interfaz visual.
 
 ## Contribuciones
 
