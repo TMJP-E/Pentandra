@@ -20,13 +20,13 @@ Pentandra permite crear grafos en pantalla con vertices y aristas, indicar nombr
 
 - [ ] El usuario, al seleccionar una arista, puede ingresar una ponderacion de la arista, mediante un recuadro de entrada.
 
+- [ ] El usuario, al seleccionar una vertice o arista, puede eliminarlo.
+
 - [ ] El usuario puede calcular la matriz de adjacencia del grafo creado.
 
 - [ ] El usuario puede calcular la matriz de incidencia del grafo creado.
 
 - [ ] El usuario puede calcular el arbol de expansion minima y el peso minimo del grafo creado.
-
-- [ ] El usuario, al calcular el arbol de expansion minima, puede visualizar cada iteracion realizada por el algoritmo de Prim.
 
 ### No Funcionales
 
@@ -36,7 +36,13 @@ Pentandra permite crear grafos en pantalla con vertices y aristas, indicar nombr
 
 - [ ] Pentandra debe manejar las interacciones con el grafo mediante el panel dedicado y recuadros de entrada.
 
+- [ ] Pentandra, al calcular el arbol de expansion minima, debe mostrar cada iteracion realizada.
+
+- [ ] Pentandra debe espaciar nodos que se encuentren muy cercanos.
+
 ### Sistema
+
+Pentandra debe implementar el algoritmo de Prim para calcular el arbol de expansion minima.
 
 Pentandra debe utilizar [Python](https://docs.python.org/3/tutorial/index.html) como tecnologia para la logica de negocio.
 

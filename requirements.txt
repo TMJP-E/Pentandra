@@ -1,2 +1,2 @@
-networkx==3.6.1
-pyside6==6.11.0
+networkx
+pyside6
