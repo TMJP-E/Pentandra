@@ -7,6 +7,7 @@ ApplicationWindow {
     id: windowRoot
 
     property string selectedNodeId: ""
+    property string selectedEdgeId: ""
 
     color: "#FFFFFF"
     title: "Pentandra"
@@ -23,8 +24,9 @@ ApplicationWindow {
     MouseArea {
         anchors.fill: contentContainer
         onClicked: {
-            forceActiveFocus();
             windowRoot.selectedNodeId = "";
+            windowRoot.selectedEdgeId = "";
+            forceActiveFocus();
         }
     }
 
@@ -159,6 +161,8 @@ ApplicationWindow {
             }
 
             Rectangle {
+                id: graphView
+
                 Layout.preferredHeight: this.width
                 Layout.fillWidth: true
                 color: "#D9D9D9"
@@ -167,6 +171,7 @@ ApplicationWindow {
                     anchors.fill: parent
                     onClicked: {
                         windowRoot.selectedNodeId = "";
+                        windowRoot.selectedEdgeId = "";
                         parent.forceActiveFocus();
                     }
                     onDoubleClicked: (mouse) => {
@@ -210,15 +215,42 @@ ApplicationWindow {
                             height: 24
                             color: "#619FF0"
                             border.width: windowRoot.selectedNodeId === idName ? 2 : 0
+                            onXChanged: {
+                                if (mouseArea.drag.active)
+                                    graphModel.updateNodePosition(parseInt(idName), x + radius, y + radius);
+
+                            }
+                            onYChanged: {
+                                if (mouseArea.drag.active)
+                                    graphModel.updateNodePosition(parseInt(idName), x + radius, y + radius);
+
+                            }
 
                             MouseArea {
+                                id: mouseArea
+
                                 anchors.fill: parent
-                                onClicked: {
-                                    parent.forceActiveFocus();
-                                    windowRoot.selectedNodeId = idName;
-                                    graphElementInput.text = name !== undefined ? name : "";
-                                    graphElementInput.forceActiveFocus();
+                                onClicked: (mouse) => {
+                                    windowRoot.selectedEdgeId = "";
+                                    if (windowRoot.selectedNodeId !== "" && windowRoot.selectedNodeId !== idName) {
+                                        graphModel.addEdge(parseInt(windowRoot.selectedNodeId), parseInt(idName));
+                                        windowRoot.selectedNodeId = "";
+                                        graphElementInput.text = "";
+                                    } else {
+                                        windowRoot.selectedNodeId = idName;
+                                        graphElementInput.text = name !== undefined ? name : "";
+                                        graphElementInput.forceActiveFocus();
+                                    }
                                 }
+
+                                drag {
+                                    target: parent
+                                    minimumX: graphView.x
+                                    minimumY: graphView.y - 92
+                                    maximumX: graphView.width - 24
+                                    maximumY: graphView.height - 24
+                                }
+
                             }
 
                             Text {
@@ -226,6 +258,7 @@ ApplicationWindow {
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: name !== undefined ? name : ""
                                 visible: text !== ""
+                                font.bold: windowRoot.selectedNodeId === idName
                             }
 
                         }
@@ -236,11 +269,18 @@ ApplicationWindow {
                         id: edgeComponent
 
                         Item {
-                            id: idName
+                            id: edgeContianer
+
+                            readonly property real dx: endXPoint - startXPoint
+                            readonly property real dy: endYPoint - startYPoint
+                            readonly property real distance: Math.sqrt(dx * dx + dy * dy)
+                            readonly property real angle: Math.atan2(dy, dx) * 180 / Math.PI
+
+                            objectName: idName
 
                             Shape {
                                 ShapePath {
-                                    strokeColor: "#000000"
+                                    strokeColor: windowRoot.selectedEdgeId === idName ? '#041763' : "#000000"
                                     strokeWidth: 2
                                     startX: startXPoint
                                     startY: startYPoint
@@ -252,13 +292,39 @@ ApplicationWindow {
 
                                 }
 
+                                Rectangle {
+                                    id: hitbox
+
+                                    x: startXPoint
+                                    y: startYPoint - height / 2
+                                    color: "transparent"
+                                    width: edgeContianer.distance
+                                    height: 12
+                                    rotation: edgeContianer.angle
+                                    transformOrigin: Item.Left
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        onClicked: {
+                                            windowRoot.selectedNodeId = "";
+                                            windowRoot.selectedEdgeId = idName;
+                                            graphElementInput.text = weight !== 0 ? weight : "";
+                                            graphElementInput.forceActiveFocus();
+                                        }
+                                    }
+
+                                }
+
                             }
 
                             Text {
                                 x: (startXPoint + endXPoint) / 2
                                 y: (startYPoint + endYPoint) / 2
+                                z: 1
                                 text: weight !== 0 ? weight : ""
                                 visible: weight !== undefined
+                                color: windowRoot.selectedEdgeId === idName ? "#041763" : "#000000"
+                                font.bold: windowRoot.selectedEdgeId === idName
                                 anchors.verticalCenterOffset: -10
                             }
 
@@ -289,14 +355,14 @@ ApplicationWindow {
                 TextField {
                     id: graphElementInput
 
-                    enabled: windowRoot.selectedNodeId
+                    enabled: windowRoot.selectedNodeId !== "" || windowRoot.selectedEdgeId !== ""
                     font.pointSize: 18
                     font.bold: true
                     color: "#000000"
                     onAccepted: acceptElementButton.clicked()
-                    placeholderText: enabled ? "Ingrese nombre" : "Seleccione un nodo"
+                    placeholderText: enabled ? "Ingrese valor" : "Seleccione elemento"
                     onActiveFocusChanged: {
-                        !windowRoot.selectedNodeId ? text = "" : text = text;
+                        !(windowRoot.selectedNodeId || windowRoot.selectedEdgeId) ? text = "" : text = text;
                     }
 
                     background: Rectangle {
@@ -311,16 +377,20 @@ ApplicationWindow {
                 Button {
                     id: acceptElementButton
 
-                    property color fillColor: (windowRoot.selectedNodeId && graphElementInput.text !== "") ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
+                    property color fillColor: (enabled) ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
 
-                    enabled: windowRoot.selectedNodeId && graphElementInput.text !== ""
+                    enabled: (windowRoot.selectedNodeId || windowRoot.selectedEdgeId) && graphElementInput.text !== ""
                     onClicked: {
                         if (windowRoot.selectedNodeId) {
                             graphModel.setNodeName(parseInt(windowRoot.selectedNodeId), graphElementInput.text);
-                            windowRoot.selectedNodeId = "";
-                            graphElementInput.text = "";
-                            contentContainer.forceActiveFocus();
+                        } else if (windowRoot.selectedEdgeId) {
+                            let parts = windowRoot.selectedEdgeId.split("-");
+                            graphModel.setEdgeWeight(parseInt(parts[0]), parseInt(parts[1]), parseFloat(graphElementInput.text));
                         }
+                        windowRoot.selectedNodeId = "";
+                        windowRoot.selectedEdgeId = "";
+                        graphElementInput.text = "";
+                        contentContainer.forceActiveFocus();
                     }
 
                     icon {
@@ -341,16 +411,20 @@ ApplicationWindow {
                 Button {
                     id: deleteElementButton
 
-                    property color fillColor: (windowRoot.selectedNodeId) ? (down ? Qt.darker("#D72020", 1.5) : "#D72020") : "#D9D9D9"
+                    property color fillColor: (enabled) ? (down ? Qt.darker("#D72020", 1.5) : "#D72020") : "#D9D9D9"
 
-                    enabled: windowRoot.selectedNodeId
+                    enabled: windowRoot.selectedNodeId || windowRoot.selectedEdgeId
                     onClicked: {
                         if (windowRoot.selectedNodeId) {
                             graphModel.removeNode(parseInt(windowRoot.selectedNodeId));
-                            windowRoot.selectedNodeId = "";
-                            graphElementInput.text = "";
-                            contentContainer.forceActiveFocus();
+                        } else if (windowRoot.selectedEdgeId) {
+                            let parts = windowRoot.selectedEdgeId.split("-");
+                            graphModel.removeEdge(parseInt(parts[0]), parseInt(parts[1]));
                         }
+                        windowRoot.selectedNodeId = "";
+                        windowRoot.selectedEdgeId = "";
+                        graphElementInput.text = "";
+                        contentContainer.forceActiveFocus();
                     }
 
                     icon {

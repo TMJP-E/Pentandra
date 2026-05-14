@@ -13,19 +13,6 @@ def main():
 
     graphModel = GraphView()
 
-    graphModel.addNode(1, 100.0, 100.0)
-    graphModel.setNodeName(1, "Node A")
-
-    graphModel.addNode(2, 400.0, 400.0)
-    graphModel.setNodeName(2, "Node B")
-
-    graphModel.addNode(3, 200.0, 300.0)
-
-    graphModel.addEdge(1, 2)
-    graphModel.setEdgeWeight(1, 2, 42.5)
-
-    graphModel.addEdge(1, 3)
-
     engine.rootContext().setContextProperty("graphModel", graphModel)
 
     qml_file = Path(__file__).parent / "presentation" / "main.qml"

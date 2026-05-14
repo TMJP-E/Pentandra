@@ -81,6 +81,7 @@ class GraphView(QAbstractListModel):
             self._items.append({"type": "node", "id": n, **data})
         for u, v, data in self._graph.edges(data=True):
             self._items.append({"type": "edge", "u": u, "v": v, **data})
+        print(self._items)
         self.endResetModel()
 
     @Slot(int, float, float)
@@ -93,6 +94,33 @@ class GraphView(QAbstractListModel):
         if self._graph.has_node(node_id):
             self._graph.nodes[node_id]["name"] = name
             self._sync_items()
+
+    @Slot(int, float, float)
+    def updateNodePosition(self, node_id, x, y):
+        if node_id in self._graph:
+            self._graph.nodes[node_id]["x"] = x
+            self._graph.nodes[node_id]["y"] = y
+
+        for i, item in enumerate(self._items):
+            if item.get("type") == "node" and item.get("id") == node_id:
+                item["x"] = x
+                item["y"] = y
+                id = self.index(i, 0)
+                self.dataChanged.emit(id, id, [self.XPointRole, self.YPointRole])
+                self._notifyConnectedEdges(node_id)
+                break
+
+    def _notifyConnectedEdges(self, node_id):
+        for i, item in enumerate(self._items):
+            if item.get("type") == "edge" and (
+                item.get("u") == node_id or item.get("v") == node_id
+            ):
+                id = self.index(i, 0)
+                self.dataChanged.emit(
+                    id,
+                    id,
+                    [self.StartXRole, self.StartYRole, self.EndXRole, self.EndYRole],
+                )
 
     @Slot(int)
     def removeNode(self, node_id):
