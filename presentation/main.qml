@@ -1,9 +1,12 @@
 import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
+import QtQuick.Shapes
 
 ApplicationWindow {
     id: windowRoot
+
+    property string selectedNodeId: ""
 
     color: "#FFFFFF"
     title: "Pentandra"
@@ -11,9 +14,18 @@ ApplicationWindow {
     width: 1280
     visible: true
 
+    FontLoader {
+        id: futuraBook
+
+        source: "resources/fonts/futura/futuraBook.ttf"
+    }
+
     MouseArea {
         anchors.fill: contentContainer
-        onClicked: forceActiveFocus()
+        onClicked: {
+            forceActiveFocus();
+            windowRoot.selectedNodeId = "";
+        }
     }
 
     RowLayout {
@@ -54,9 +66,9 @@ ApplicationWindow {
                         Layout.preferredWidth: optionsContainer.width - 2 * contentContainer.spacer
                         bottomPadding: 13
                         text: content
+                        font.family: futuraBook.font.family
                         font.pointSize: 12
                         font.bold: true
-                        objectName: objectName
 
                         icon {
                             source: source
@@ -112,6 +124,7 @@ ApplicationWindow {
 
                 property string content: "Title"
 
+                font.family: futuraBook.font.family
                 text: content
                 font.pointSize: 32
                 font.bold: true
@@ -140,14 +153,121 @@ ApplicationWindow {
                 text: "Grafo"
                 font.pointSize: 24
                 font.bold: true
+                font.family: futuraBook.font.family
                 padding: 24
                 Layout.alignment: Qt.AlignHCenter
             }
 
             Rectangle {
-                color: "#D9D9D9"
                 Layout.preferredHeight: this.width
                 Layout.fillWidth: true
+                color: "#D9D9D9"
+
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: {
+                        windowRoot.selectedNodeId = "";
+                        parent.forceActiveFocus();
+                    }
+                    onDoubleClicked: (mouse) => {
+                        graphModel.addNode(graphModel.rowCount() + 1, mouse.x, mouse.y);
+                    }
+                }
+
+                Item {
+                    Repeater {
+                        id: graphRepeater
+
+                        model: graphModel
+
+                        delegate: Loader {
+                            property string type: elementType
+                            property string idName: elementId
+                            property string name: elementName
+                            property double xPoint: modelXPoint
+                            property double yPoint: modelYPoint
+                            property double weight: modelWeight
+                            property double startXPoint: modelStartXPoint
+                            property double startYPoint: modelStartYPoint
+                            property double endXPoint: modelEndXPoint
+                            property double endYPoint: modelEndYPoint
+
+                            sourceComponent: elementType === "node" ? nodeComponent : edgeComponent
+                            z: type === "node" ? 1 : 0
+                        }
+
+                    }
+
+                    Component {
+                        id: nodeComponent
+
+                        Rectangle {
+                            objectName: idName
+                            radius: width / 2
+                            x: xPoint - radius
+                            y: yPoint - radius
+                            width: 24
+                            height: 24
+                            color: "#619FF0"
+                            border.width: windowRoot.selectedNodeId === idName ? 2 : 0
+
+                            MouseArea {
+                                anchors.fill: parent
+                                onClicked: {
+                                    parent.forceActiveFocus();
+                                    windowRoot.selectedNodeId = idName;
+                                    graphElementInput.text = name !== undefined ? name : "";
+                                    graphElementInput.forceActiveFocus();
+                                }
+                            }
+
+                            Text {
+                                anchors.top: parent.bottom
+                                anchors.horizontalCenter: parent.horizontalCenter
+                                text: name !== undefined ? name : ""
+                                visible: text !== ""
+                            }
+
+                        }
+
+                    }
+
+                    Component {
+                        id: edgeComponent
+
+                        Item {
+                            id: idName
+
+                            Shape {
+                                ShapePath {
+                                    strokeColor: "#000000"
+                                    strokeWidth: 2
+                                    startX: startXPoint
+                                    startY: startYPoint
+
+                                    PathLine {
+                                        x: endXPoint
+                                        y: endYPoint
+                                    }
+
+                                }
+
+                            }
+
+                            Text {
+                                x: (startXPoint + endXPoint) / 2
+                                y: (startYPoint + endYPoint) / 2
+                                text: weight !== 0 ? weight : ""
+                                visible: weight !== undefined
+                                anchors.verticalCenterOffset: -10
+                            }
+
+                        }
+
+                    }
+
+                }
+
             }
 
             RowLayout {
@@ -159,6 +279,7 @@ ApplicationWindow {
                     font.pointSize: 20
                     font.bold: true
                     width: 120
+                    font.family: futuraBook.font.family
                     text: "Nombre:"
                     elide: Text.ElideLeft
                     onTextChanged: this.text = this.text + ":"
@@ -168,9 +289,15 @@ ApplicationWindow {
                 TextField {
                     id: graphElementInput
 
+                    enabled: windowRoot.selectedNodeId
                     font.pointSize: 18
                     font.bold: true
                     color: "#000000"
+                    onAccepted: acceptElementButton.clicked()
+                    placeholderText: enabled ? "Ingrese nombre" : "Seleccione un nodo"
+                    onActiveFocusChanged: {
+                        !windowRoot.selectedNodeId ? text = "" : text = text;
+                    }
 
                     background: Rectangle {
                         implicitHeight: 36
@@ -184,7 +311,17 @@ ApplicationWindow {
                 Button {
                     id: acceptElementButton
 
-                    property color fillColor: down ? Qt.darker("#4ED433", 1.5) : "#4ED433"
+                    property color fillColor: (windowRoot.selectedNodeId && graphElementInput.text !== "") ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
+
+                    enabled: windowRoot.selectedNodeId && graphElementInput.text !== ""
+                    onClicked: {
+                        if (windowRoot.selectedNodeId) {
+                            graphModel.setNodeName(parseInt(windowRoot.selectedNodeId), graphElementInput.text);
+                            windowRoot.selectedNodeId = "";
+                            graphElementInput.text = "";
+                            contentContainer.forceActiveFocus();
+                        }
+                    }
 
                     icon {
                         source: "resources/icons/check.svg"
@@ -204,7 +341,17 @@ ApplicationWindow {
                 Button {
                     id: deleteElementButton
 
-                    property color fillColor: down ? Qt.darker("#D72020", 1.5) : "#D72020"
+                    property color fillColor: (windowRoot.selectedNodeId) ? (down ? Qt.darker("#D72020", 1.5) : "#D72020") : "#D9D9D9"
+
+                    enabled: windowRoot.selectedNodeId
+                    onClicked: {
+                        if (windowRoot.selectedNodeId) {
+                            graphModel.removeNode(parseInt(windowRoot.selectedNodeId));
+                            windowRoot.selectedNodeId = "";
+                            graphElementInput.text = "";
+                            contentContainer.forceActiveFocus();
+                        }
+                    }
 
                     icon {
                         source: "resources/icons/trashcan.svg"
@@ -238,6 +385,7 @@ ApplicationWindow {
             id: headerText
 
             anchors.centerIn: headerContainer
+            font.family: futuraBook.font.family
             color: "#FFFFFF"
             text: "Pentandra"
             font.bold: true
