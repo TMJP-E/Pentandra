@@ -56,7 +56,7 @@ Las siguientes recomendaciones para contribuir garantizan consistencia, legibili
 
 ### Nombres
 
-Para nombrar variables, existen cinco convenciones a utilizar.
+Para nombrar variables, existen cinco convenciones a utilizar
 
 | Tipo | Casos de Uso | Ejemplo |
 | :-- | :-- | :-- |
