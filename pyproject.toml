@@ -1,0 +1,5 @@
+[project]
+name = "pentandra"
+
+[tool.pyside6-project]
+files = ["main.py", "presentation/main.qml", "presentation/res.qrc", "presentation/icons/check.svg", "presentation/icons/matrix-adjacency.svg", "presentation/icons/matrix-incidence,svg", "presentation/icons/trashcan.svg", "presentation/icons/tree.svg", "presentation/icons/logo.jpg", "presentation/graph/graphView.py", "presentation/graph/graphView.qml", "presentation/graph/qmldir"]
