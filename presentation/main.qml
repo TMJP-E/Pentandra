@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Shapes
+import "resources/styles"
 
 ApplicationWindow {
     id: windowRoot
@@ -9,20 +10,46 @@ ApplicationWindow {
     property string selectedNodeId: ""
     property string selectedEdgeId: ""
 
-    color: "#FFFFFF"
+    function selectNode(id) {
+        windowRoot.selectedNodeId = id;
+        windowRoot.selectedEdgeId = "";
+    }
+
+    function selectEdge(id) {
+        windowRoot.selectedNodeId = "";
+        windowRoot.selectedEdgeId = id;
+    }
+
     title: "Pentandra"
+    color: styles.background
     height: 800
     width: 1280
     visible: true
 
-    FontLoader {
-        id: futuraBook
+    Styles {
+        id: styles
+    }
 
-        source: "resources/fonts/futura/futuraBook.ttf"
+    FontLoader {
+        id: titleFont
+
+        source: "resources/fonts/aldrich.ttf"
+    }
+
+    FontLoader {
+        id: contentFont
+
+        source: "resources/fonts/futuraBook.ttf"
+    }
+
+    FontLoader {
+        id: resultsFont
+
+        source: "resources/fonts/googleSansCode.ttf"
     }
 
     MouseArea {
-        anchors.fill: contentContainer
+        anchors.fill: fullContainer
         onClicked: {
             windowRoot.selectedNodeId = "";
             windowRoot.selectedEdgeId = "";
@@ -31,30 +58,29 @@ ApplicationWindow {
     }
 
     RowLayout {
-        id: contentContainer
+        id: fullContainer
 
-        readonly property int spacer: 12
-
-        spacing: contentContainer.spacer
-        height: windowRoot.height
-        width: windowRoot.width
+        anchors.rightMargin: styles.smallSpacing
+        spacing: styles.bigSpacing
+        anchors.fill: parent
 
         Rectangle {
-            id: optionsContainer
+            id: barContainer
 
-            readonly property int widthAmount: 160
-
-            color: "#8B5538"
-            Layout.fillHeight: true
-            width: widthAmount
+            color: styles.bar
+            Layout.alignment: Qt.AlignTop
+            Layout.preferredHeight: parent.height
+            Layout.preferredWidth: 40 + parent.width / 10
 
             ColumnLayout {
-                spacing: contentContainer.spacer
+                spacing: styles.midSpacing
+                Layout.fillHeight: true
+                Layout.fillWidth: true
 
                 anchors {
                     horizontalCenter: parent.horizontalCenter
                     top: parent.top
-                    topMargin: contentContainer.spacer
+                    topMargin: styles.smallSpacing
                 }
 
                 Repeater {
@@ -64,16 +90,15 @@ ApplicationWindow {
                         required property string objectName
                         required property string actionType
 
-                        display: AbstractButton.TextUnderIcon
-                        Layout.preferredHeight: optionsContainer.width - 1 * contentContainer.spacer
-                        Layout.preferredWidth: optionsContainer.width - 2 * contentContainer.spacer
-                        bottomPadding: 13
                         text: content
-                        font.family: futuraBook.font.family
-                        font.pointSize: 12
+                        font.family: contentFont.font.family
+                        font.pointSize: styles.button
                         font.bold: true
+                        display: AbstractButton.TextUnderIcon
+                        Layout.preferredHeight: barContainer.width - styles.smallSpacing
+                        Layout.preferredWidth: barContainer.width - styles.bigSpacing
                         onClicked: {
-                            actionTitle.content = content;
+                            actionTitle.text = content;
                             if (actionType === "adjacency") {
                                 actionResults.text = graphModel.getAdjacencyMatrix();
                             } else if (actionType === "incidence") {
@@ -85,15 +110,15 @@ ApplicationWindow {
                         }
 
                         icon {
+                            height: barContainer.width - 4 * styles.smallSpacing
+                            width: barContainer.width - 4 * styles.smallSpacing
                             source: source
-                            height: optionsContainer.width - 4 * contentContainer.spacer
-                            width: optionsContainer.width - 4 * contentContainer.spacer
-                            color: "#FFFFFF"
+                            color: styles.background
                         }
 
                         background: Rectangle {
-                            color: parent.down ? Qt.darker(optionsContainer.color, 2) : Qt.darker(optionsContainer.color, 1.5)
-                            radius: contentContainer.spacer
+                            color: parent.down ? Qt.darker(styles.bar, 2) : Qt.darker(styles.bar, 1.5)
+                            radius: styles.smallSpacing
                         }
 
                     }
@@ -114,7 +139,7 @@ ApplicationWindow {
                         }
 
                         ListElement {
-                            content: "Árbol Mínimo"
+                            content: "Árbol"
                             source: "resources/icons/tree.svg"
                             objectName: "mstButton"
                             actionType: "mst"
@@ -124,6 +149,16 @@ ApplicationWindow {
 
                 }
 
+                Timer {
+                    id: mstDelayTimer
+
+                    interval: 100
+                    repeat: false
+                    onTriggered: {
+                        actionResults.text = graphModel.getMST();
+                    }
+                }
+
             }
 
         }
@@ -131,34 +166,31 @@ ApplicationWindow {
         ColumnLayout {
             id: resultsContainer
 
-            spacing: 12
-            Layout.margins: 12
             Layout.fillHeight: true
-            Layout.preferredWidth: 540
+            Layout.fillWidth: true
+            Layout.horizontalStretchFactor: 1
 
             Text {
                 id: actionTitle
 
-                property string content: "Resultados"
-
-                font.family: futuraBook.font.family
-                text: content
-                font.pointSize: 32
+                text: "Resultados"
+                font.family: contentFont.font.family
+                font.pointSize: styles.heading
                 font.bold: true
                 Layout.alignment: Qt.AlignHCenter
-                padding: 48
+                padding: styles.bigSpacing
             }
 
             Text {
                 id: actionResults
 
+                text: "Seleccione una opción del panel izquierdo."
+                font.family: resultsFont.font.family
+                font.pointSize: styles.content
+                horizontalAlignment: Text.AlignHCenter
+                wrapMode: Text.WordWrap
                 Layout.fillHeight: true
                 Layout.fillWidth: true
-                wrapMode: Text.WordWrap
-                font.family: "Courier"
-                font.pointSize: 16
-                text: "Seleccione una opción del panel izquierdo."
-                horizontalAlignment: Text.AlignLeft
             }
 
         }
@@ -166,10 +198,9 @@ ApplicationWindow {
         ColumnLayout {
             id: graphContainer
 
-            Layout.rightMargin: 36
             Layout.fillHeight: true
             Layout.fillWidth: true
-            Layout.alignment: Qt.AlignTop
+            Layout.maximumWidth: 800
 
             RowLayout {
                 id: graphTitleContainer
@@ -178,7 +209,7 @@ ApplicationWindow {
                 property bool graphHasColors: false
 
                 Layout.alignment: Qt.AlignHCenter
-                spacing: 16
+                spacing: styles.midSpacing
 
                 Connections {
                     function onModelReset() {
@@ -196,39 +227,39 @@ ApplicationWindow {
 
                 Text {
                     text: "Grafo"
-                    font.pointSize: 24
+                    font.family: contentFont.font.family
+                    font.pointSize: styles.title
                     font.bold: true
-                    font.family: futuraBook.font.family
                     Layout.alignment: Qt.AlignVCenter
                 }
 
                 Button {
                     id: cleanColorsButton
 
-                    property color fillColor: (enabled) ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
+                    property color fillColor: (enabled) ? (down ? Qt.darker(styles.accept, 1.5) : styles.accept) : styles.selector
 
                     enabled: !parent.graphIsEmpty && parent.graphHasColors
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredHeight: 36
-                    Layout.preferredWidth: 36
+                    Layout.preferredHeight: styles.heading
+                    Layout.preferredWidth: styles.heading
                     onClicked: {
                         graphModel.clearColors();
-                        if (actionTitle.content === "Árbol Mínimo")
+                        if (actionTitle.text === "Árbol")
                             actionResults.text = "Seleccione una opción del panel izquierdo.";
 
                     }
 
                     icon {
                         source: "resources/icons/clean.svg"
-                        height: 24
-                        width: 24
                         color: fillColor
+                        height: styles.title
+                        width: styles.title
                     }
 
                     background: Rectangle {
-                        radius: 4
                         border.color: parent.fillColor
                         border.width: 4
+                        radius: 4
                     }
 
                 }
@@ -236,12 +267,12 @@ ApplicationWindow {
                 Button {
                     id: clearGraphButton
 
-                    property color fillColor: (enabled) ? (down ? Qt.darker("#D72020", 1.5) : "#D72020") : "#D9D9D9"
+                    property color fillColor: (enabled) ? (down ? Qt.darker(styles.danger, 1.5) : styles.danger) : styles.selector
 
                     enabled: !parent.graphIsEmpty
                     Layout.alignment: Qt.AlignVCenter
-                    Layout.preferredHeight: 36
-                    Layout.preferredWidth: 36
+                    Layout.preferredHeight: styles.heading
+                    Layout.preferredWidth: styles.heading
                     onClicked: {
                         graphModel.clearGraph();
                         windowRoot.selectedNodeId = "";
@@ -252,8 +283,8 @@ ApplicationWindow {
 
                     icon {
                         source: "resources/icons/trashcan.svg"
-                        height: 24
-                        width: 24
+                        height: styles.title
+                        width: styles.title
                         color: fillColor
                     }
 
@@ -270,9 +301,9 @@ ApplicationWindow {
             Rectangle {
                 id: graphView
 
+                color: styles.selector
                 Layout.preferredHeight: this.width
                 Layout.fillWidth: true
-                color: "#D9D9D9"
 
                 MouseArea {
                     anchors.fill: parent
@@ -296,14 +327,14 @@ ApplicationWindow {
                             property string type: elementType
                             property string idName: elementId
                             property string name: elementName
-                            property color treeColor: modelColor
+                            property var treeColor: elementColor
+                            property double weight: modelWeight
                             property double xPoint: modelXPoint
                             property double yPoint: modelYPoint
-                            property double weight: modelWeight
-                            property double startXPoint: modelStartXPoint
-                            property double startYPoint: modelStartYPoint
-                            property double endXPoint: modelEndXPoint
-                            property double endYPoint: modelEndYPoint
+                            property double startXPoint: modelStartX
+                            property double startYPoint: modelStartY
+                            property double endXPoint: modelEndX
+                            property double endYPoint: modelEndY
 
                             sourceComponent: elementType === "node" ? nodeComponent : edgeComponent
                             z: type === "node" ? 1 : 0
@@ -321,7 +352,8 @@ ApplicationWindow {
                             y: yPoint - radius
                             width: 24
                             height: 24
-                            color: (treeColor !== undefined && treeColor !== "") ? treeColor : "#619FF0"
+                            color: (treeColor !== undefined && treeColor !== "") ? treeColor : styles.element
+                            border.color: windowRoot.selectedNodeId === idName ? Qt.darker(color, 1.25) : "transparent"
                             border.width: windowRoot.selectedNodeId === idName ? 2 : 0
                             onXChanged: {
                                 if (mouseArea.drag.active)
@@ -365,8 +397,9 @@ ApplicationWindow {
                                 anchors.top: parent.bottom
                                 anchors.horizontalCenter: parent.horizontalCenter
                                 text: name !== undefined ? name : ""
-                                visible: text !== ""
+                                font.family: resultsFont.font.family
                                 font.bold: windowRoot.selectedNodeId === idName
+                                visible: text !== ""
                             }
 
                         }
@@ -387,9 +420,14 @@ ApplicationWindow {
                             objectName: idName
 
                             Shape {
+                                antialiasing: true
+                                smooth: true
+
                                 ShapePath {
-                                    strokeColor: (treeColor !== undefined && treeColor !== "") ? treeColor : (windowRoot.selectedEdgeId === idName ? "#050C29" : "#000000")
-                                    strokeWidth: (treeColor !== undefined && treeColor !== "") ? 4 : 2
+                                    property color lineColor: (treeColor !== undefined && treeColor !== "") ? treeColor : styles.element
+
+                                    strokeColor: (windowRoot.selectedEdgeId === idName ? Qt.darker(lineColor, 1.5) : Qt.darker(lineColor, 1.25))
+                                    strokeWidth: (treeColor !== undefined && treeColor !== "") ? 3 : 2
                                     startX: startXPoint
                                     startY: startYPoint
 
@@ -426,14 +464,14 @@ ApplicationWindow {
                             }
 
                             Text {
+                                anchors.verticalCenterOffset: -10
+                                text: weight !== 0 ? weight : ""
+                                font.family: resultsFont.font.family
+                                font.bold: windowRoot.selectedEdgeId === idName
+                                visible: weight !== undefined
                                 x: (startXPoint + endXPoint) / 2
                                 y: (startYPoint + endYPoint) / 2
-                                z: 1
-                                text: weight !== 0 ? weight : ""
-                                visible: weight !== undefined
-                                color: windowRoot.selectedEdgeId === idName ? "#041763" : "#000000"
-                                font.bold: windowRoot.selectedEdgeId === idName
-                                anchors.verticalCenterOffset: -10
+                                z: 2
                             }
 
                         }
@@ -450,14 +488,13 @@ ApplicationWindow {
                 Text {
                     id: graphElement
 
-                    font.pointSize: 20
+                    text: "Dato:"
+                    font.family: contentFont.font.family
+                    font.pointSize: styles.title
                     font.bold: true
-                    width: 120
-                    font.family: futuraBook.font.family
-                    text: "Nombre:"
                     elide: Text.ElideLeft
-                    onTextChanged: this.text = this.text + ":"
                     padding: 4
+                    width: 120
                 }
 
                 DoubleValidator {
@@ -474,7 +511,7 @@ ApplicationWindow {
                     id: graphElementInput
 
                     enabled: windowRoot.selectedNodeId || windowRoot.selectedEdgeId
-                    font.pointSize: 18
+                    font.pointSize: styles.label
                     font.bold: true
                     color: "#000000"
                     onAccepted: acceptElementButton.clicked()
@@ -485,10 +522,10 @@ ApplicationWindow {
                     validator: windowRoot.selectedEdgeId ? edgeWeightValidator : null
 
                     background: Rectangle {
-                        implicitHeight: 36
-                        implicitWidth: 480 - graphElement.width - acceptElementButton.width - deleteElementButton.width
-                        color: parent.focus ? Qt.darker("#D9D9D9", 1.1) : Qt.darker("#D9D9D9", 1.2)
+                        color: parent.focus ? Qt.darker(styles.selector, 1.1) : Qt.darker(styles.selector, 1.2)
                         radius: 4
+                        implicitHeight: styles.heading
+                        implicitWidth: 480 - graphElement.width - acceptElementButton.width - deleteElementButton.width
                     }
 
                 }
@@ -496,7 +533,7 @@ ApplicationWindow {
                 Button {
                     id: acceptElementButton
 
-                    property color fillColor: (enabled) ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
+                    property color fillColor: (enabled) ? (down ? Qt.darker(styles.accept, 1.5) : styles.accept) : styles.selector
 
                     enabled: (windowRoot.selectedNodeId || windowRoot.selectedEdgeId) && graphElementInput.text !== "" && (windowRoot.selectedEdgeId === "" || (!isNaN(parseFloat(graphElementInput.text)) && isFinite(graphElementInput.text) && parseFloat(graphElementInput.text) >= 0))
                     onClicked: {
@@ -509,13 +546,13 @@ ApplicationWindow {
                         windowRoot.selectedNodeId = "";
                         windowRoot.selectedEdgeId = "";
                         graphElementInput.text = "";
-                        contentContainer.forceActiveFocus();
+                        fullContainer.forceActiveFocus();
                     }
 
                     icon {
                         source: "resources/icons/check.svg"
-                        height: 24
-                        width: 24
+                        height: styles.midSpacing
+                        width: styles.midSpacing
                         color: fillColor
                     }
 
@@ -530,7 +567,7 @@ ApplicationWindow {
                 Button {
                     id: deleteElementButton
 
-                    property color fillColor: (enabled) ? (down ? Qt.darker("#D72020", 1.5) : "#D72020") : "#D9D9D9"
+                    property color fillColor: (enabled) ? (down ? Qt.darker(styles.danger, 1.5) : styles.danger) : styles.selector
 
                     enabled: windowRoot.selectedNodeId || windowRoot.selectedEdgeId
                     onClicked: {
@@ -543,13 +580,13 @@ ApplicationWindow {
                         windowRoot.selectedNodeId = "";
                         windowRoot.selectedEdgeId = "";
                         graphElementInput.text = "";
-                        contentContainer.forceActiveFocus();
+                        fullContainer.forceActiveFocus();
                     }
 
                     icon {
                         source: "resources/icons/trashcan.svg"
-                        height: 24
-                        width: 24
+                        height: styles.midSpacing
+                        width: styles.midSpacing
                         color: fillColor
                     }
 
@@ -567,32 +604,26 @@ ApplicationWindow {
 
     }
 
-    Timer {
-        id: mstDelayTimer
-
-        interval: 50
-        repeat: false
-        onTriggered: {
-            actionResults.text = graphModel.getMST();
-        }
-    }
-
     header: Rectangle {
         id: headerContainer
 
-        color: "#57B95A"
-        height: 80
-        Layout.fillWidth: true
+        color: styles.header
+        height: headerText.height + styles.midSpacing
+        width: parent.width
 
         Text {
             id: headerText
 
             anchors.centerIn: headerContainer
-            font.family: futuraBook.font.family
-            color: "#FFFFFF"
             text: "Pentandra"
-            font.bold: true
-            font.pointSize: 24
+            color: styles.headerText
+
+            font {
+                family: titleFont.font.family
+                weight: 900
+                pointSize: styles.heading
+            }
+
         }
 
     }
