@@ -1,56 +1,56 @@
 # Pentandra <img src="logo.jpg" alt="" width="24">
 
-Pentandra es una aplicacion de escritorio que permite crear y analizar grafos de manera dinamica, obteniendo informacion importante, como sus matrices y el arbol de expansion minima.
+Pentandra es una aplicación de escritorio que permite crear y analizar grafos de manera dinámica, obteniendo información importante, como sus matrices y el árbol de expansión mínima.
 
-## Proposito
+## Propósito
 
-Pentandra permite crear grafos en pantalla con vertices y aristas, indicar nombres y ponderaciones, y, por ultimo, realizar tres operaciones con el grafo creado, calcular la matriz de incidencia, adjacencia y el arbol de expansion minima.
+Pentandra permite crear grafos en pantalla con vértices y aristas, indicar nombres y ponderaciones, y, por último, realizar tres operaciones con el grafo creado: calcular la matriz de incidencia, adyacencia y el árbol de expansión mínima.
 
 ## Requerimientos
 
 ### Funcionales
 
-- [X] El usuario puede crear un vertice en pantalla haciendo doble click en el panel del grafo.
+- [X] El usuario puede crear un vértice en pantalla haciendo doble click en el panel del grafo.
 
-- [X] El usuario puede seleccionar cualquier vertice o arista haciendo click en el.
+- [X] El usuario puede seleccionar cualquier vértice o arista haciendo click en él.
 
-- [X] El usuario puede unir dos vertices, seleccionando uno de ellos y haciendo click en el otro, generando una arista.
+- [X] El usuario puede unir dos vértices, seleccionando uno de ellos y haciendo click en el otro, generando una arista.
 
-- [X] El usuario, al seleccionar un vertice, puede ingresar un nombre para el vertice, mediante un recuadro de entrada.
+- [X] El usuario, al seleccionar un vértice, puede ingresar un nombre para el vértice, mediante un recuadro de entrada.
 
-- [X] El usuario, al seleccionar una arista, puede ingresar una ponderacion de la arista, mediante un recuadro de entrada.
+- [X] El usuario, al seleccionar una arista, puede ingresar una ponderación de la arista, mediante un recuadro de entrada.
 
-- [X] El usuario, al seleccionar una vertice o arista, puede eliminarlo.
+- [X] El usuario, al seleccionar un vértice o arista, puede eliminarlo.
 
-- [X] El usuario puede calcular la matriz de adjacencia del grafo creado.
+- [X] El usuario puede calcular la matriz de adyacencia del grafo creado.
 
 - [X] El usuario puede calcular la matriz de incidencia del grafo creado.
 
-- [X] El usuario puede calcular el arbol de expansion minima y el peso minimo del grafo creado.
+- [X] El usuario puede calcular el árbol de expansión mínima y el peso mínimo del grafo creado.
 
 ### No Funcionales
 
-- [X] Pentandra debe desplegar todos los elementos de un grafo simple no dirigido, estos elementos son vertices, aristas, nombres de vertices y ponderaciones de aristas.
+- [X] Pentandra debe desplegar todos los elementos de un grafo simple no dirigido, estos elementos son: vértices, aristas, nombres de vértices y ponderaciones de aristas.
 
 - [X] Pentandra debe mostrar el grafo en un panel dedicado.
 
 - [X] Pentandra debe manejar las interacciones con el grafo mediante el panel dedicado y recuadros de entrada.
 
-- [X] Pentandra, al calcular el arbol de expansion minima, debe mostrar cada iteracion realizada.
+- [X] Pentandra, al calcular el árbol de expansión mínima, debe mostrar cada iteración realizada.
 
 ### Sistema
 
-Pentandra debe implementar el algoritmo de Prim para calcular el arbol de expansion minima.
+Pentandra debe implementar el algoritmo de Prim para calcular el árbol de expansión mínima.
 
-Pentandra debe utilizar [Python](https://docs.python.org/3/tutorial/index.html) como tecnologia para la logica de negocio.
+Pentandra debe utilizar [Python](https://docs.python.org/3/tutorial/index.html) como tecnología para la lógica de negocio.
 
 Pentandra debe utilizar la libreria [NetworkX](https://networkx.org/documentation/stable/tutorial.html) para el manejo de grafos.
 
-Pentandra debe utilizar [Qt](https://doc.qt.io/qtforpython-6/) como tecnologia para la interfaz visual.
+Pentandra debe utilizar [Qt](https://doc.qt.io/qtforpython-6/) como tecnología para la interfaz visual.
 
 ## Contribuciones
 
-Las siguientes recomendaciones para contribuir garantizan consistencia, legibilidad y facil entendimiento del proyecto para todos los contribuidores.
+Las siguientes recomendaciones para contribuir garantizan consistencia, legibilidad y fácil entendimiento del proyecto para todos los contribuidores.
 
 ### Nombres
 
@@ -62,23 +62,23 @@ Para nombrar variables, existen cinco convenciones a utilizar
 | SCREAMING_SNAKE_CASE | Nombrar constantes. | `MAX_ARISTAS = 100` |
 | camelCase | Nombrar funciones, estructuras u objetos. | `aristasDirigidas = invertirAristas(grafoDirigido.edges())` |
 | PascalCase | Nombrar clases | `class GrafoSimplificado(nx.Graph)` |
-| kebab-case | Nombrar archivos que no sean unicamente clases. | `logo-cuadrado.jpg` |
+| kebab-case | Nombrar archivos que no sean únicamente clases. | `logo-cuadrado.jpg` |
 
 ### Documentacion
 
-Cada clase, metodo y funcion debe incluir un _Docstring_ que describa los siguientes elementos:
+Cada clase, método y función debe incluir un _Docstring_ que describa los siguientes elementos:
 
 - Objetivo Principal: Utiliza un verbo para describir que es lo que hace.
-- *Detalles: Si es necesario explicar algun detalle de uso adicional.
-- *Parametros: Todos los parametros que espera una clase (en su constructor), metodo o funcion.
-- *Retorno: En caso de que regrese algun dato, que informacion se obtiene.
-- *Excepciones: Todos los casos donde pueda arrojar una excepcion.
+- *Detalles: Si es necesario explicar algún detalle de uso adicional.
+- *Parámetros: Todos los parámetros que espera una clase (en su constructor), método o función.
+- *Retorno: En caso de que regrese algún dato, que información se obtiene.
+- *Excepciones: Todos los casos donde pueda arrojar una excepción.
 
-Los elementos marcados con `*` no siempre se encuentran en una clase, metodo o funcion.
+Los elementos marcados con `*` no siempre se encuentran en una clase, método o función.
 
-Las funciones y metodos deben anotar sus tipos, si bien, Python no requiere ni comprueba estos, con ayuda de herramientas como Pylance y sus integraciones, es facil conocer implicitamente que tipo espera y, anotar su tipo correspondiente, para que sea mas facil el uso y mantenimiento de cada funcion.
+Las funciones y métodos deben anotar sus tipos, si bien, Python no requiere ni comprueba estos, con ayuda de herramientas como Pylance y sus integraciones, es fácil conocer implícitamente qué tipo espera y, anotar su tipo correspondiente, para que sea más fácil el uso y mantenimiento de cada función.
 
-Algunos de los tipos basicos son:
+Algunos de los tipos básicos son:
 
 - `bool`
 - `bytearray`
@@ -92,27 +92,27 @@ Algunos de los tipos basicos son:
 - `str`
 - `tuple`
 
-#### Ejemplo (documentacion)
+#### Ejemplo (documentación)
 
 ```python
 def conversionInt(cadena: str) -> int:
     """
     Convierte una cadena en un entero.
 
-    La cadena no puede ser un numero decimal.
+    La cadena no puede ser un número decimal.
 
-    Regresa el numero entero que representa la cadena.
+    Regresa el número entero que representa la cadena.
 
     Arroja `TypeError` si el argumento `cadena` no es un `str`.
     """
 
-    #TODO: Implementar logica de conversion.
+    #TODO: Implementar lógica de conversión.
     pass
 ```
 
 ### Estructura
 
-Para garantizar modularizacion y separacion de intereses, la capa de presentacion esta separada de la logica de negocio.
+Para garantizar modularización y separación de intereses, la capa de presentación está separada de la lógica de negocio.
 
 Cada _commit_ debe ser realizado conforme a la estructura presentada en [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), con las descripciones de cada commit gracias a [Angular](https://github.com/angular/angular/blob/22b96b9/CONTRIBUTING.md#-commit-message-guidelines)
 
@@ -128,27 +128,27 @@ Cada commit debe ser escrito con la siguiente estructura:
 <footer>*
 ```
 
-Los elementos marcados con `*` son opcionales, el concepto debe describir brevemente cuales fueron los cambios principales y siempre inicia con un verbo, en caso de contar con varios cambios, realizar una descripcion dedicada.
+Los elementos marcados con `*` son opcionales, el concepto debe describir brevemente cuales fueron los cambios principales y siempre inicia con un verbo, en caso de contar con varios cambios, realizar una descripción dedicada.
 
 Los tipos de commits admitidos son los siguientes:
 
 - **build**: Cambios en dependencias o el entorno.
-- **docs**: Cambios en la documentacion.
-- **feat**: Implementacion o cambios de un requerimiento.
-- **fix**: Correccion de errores.
-- **refactor**: Cambios en la estructura y contenido del codigo existente.
-- **style**: Cambios unicamente visuales (como nombres de variables, organizacion de modulos, etc).
-- **test**: Implementacion y cambios en el desarrollo de pruebas.
+- **docs**: Cambios en la documentación.
+- **feat**: Implementación o cambios de un requerimiento.
+- **fix**: Corrección de errores.
+- **refactor**: Cambios en la estructura y contenido del código existente.
+- **style**: Cambios únicamente visuales (como nombres de variables, organización de módulos, etc).
+- **test**: Implementación y cambios en el desarrollo de pruebas.
 
 ##### Ejemplo (commit)
 
-`feat(visual): Implementacion de estilos visuales mediante el formato .qss`
+`feat(visual): Implementación de estilos visuales mediante el formato .qss`
 
 ## Uso
 
-### Instalacion
+### Instalación
 
-Para trabajar en el proyecto, [Python](https://www.python.org/downloads/) debe estar instalado en el sistema, los siguientes comandos crean y activan un entorno virtual en el que se instalaran las dependencias necesarias.
+Para trabajar en el proyecto, [Python](https://www.python.org/downloads/) debe estar instalado en el sistema, los siguientes comandos crean y activan un entorno virtual en el que se instalarán las dependencias necesarias.
 
 ```sh
 # Crear el entorno virtual
@@ -166,9 +166,9 @@ source myvenv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Ejecucion
+### Ejecución
 
-El archivo `main.py` ejecuta la aplicacion, para ello se ocupa el siguiente comando.
+El archivo `main.py` ejecuta la aplicación, para ello se ocupa el siguiente comando.
 
 ```sh
 python main.py
