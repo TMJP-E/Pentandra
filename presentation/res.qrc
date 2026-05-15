@@ -6,6 +6,7 @@
         <file>resources/icons/tree.svg</file>
         <file>resources/icons/logo.jpg</file>
         <file>resources/icons/check.svg</file>
-        <file alias="futuraBook.ttf">resources/fonts/futura/Futura Book font.ttf</file>
+        <file>resources/fonts/futura/futuraBook.ttf</file>
+        <file>resources/icons/clean.svg</file>
     </qresource>
 </RCC>

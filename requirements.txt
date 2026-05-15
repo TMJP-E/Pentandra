@@ -1,2 +1,3 @@
 networkx
 pyside6
+scipy

@@ -1,5 +1,16 @@
+import random
+import time
+
 import networkx as nx
-from PySide6.QtCore import QAbstractListModel, Qt, Slot, QByteArray, QModelIndex
+import scipy as sp
+from PySide6.QtCore import (
+    QAbstractListModel,
+    QCoreApplication,
+    Qt,
+    Slot,
+    QByteArray,
+    QModelIndex,
+)
 
 
 class GraphView(QAbstractListModel):
@@ -13,6 +24,7 @@ class GraphView(QAbstractListModel):
     EndXRole = Qt.UserRole + 8
     EndYRole = Qt.UserRole + 9
     WeightRole = Qt.UserRole + 10
+    ColorRole = Qt.UserRole + 11
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -31,6 +43,7 @@ class GraphView(QAbstractListModel):
             self.StartYRole: QByteArray(b"modelStartYPoint"),
             self.EndXRole: QByteArray(b"modelEndXPoint"),
             self.EndYRole: QByteArray(b"modelEndYPoint"),
+            self.ColorRole: QByteArray(b"modelColor"),
         }
 
     def rowCount(self, parent=QModelIndex()):
@@ -46,6 +59,8 @@ class GraphView(QAbstractListModel):
             return item.get("type")
         if role == self.NameRole:
             return item.get("name", "")
+        if role == self.ColorRole:
+            return item.get("color", "")
 
         if item["type"] == "node":
             if role == self.IdRole:
@@ -81,7 +96,6 @@ class GraphView(QAbstractListModel):
             self._items.append({"type": "node", "id": n, **data})
         for u, v, data in self._graph.edges(data=True):
             self._items.append({"type": "edge", "u": u, "v": v, **data})
-        print(self._items)
         self.endResetModel()
 
     @Slot(int, float, float)
@@ -145,3 +159,147 @@ class GraphView(QAbstractListModel):
         if self._graph.has_edge(u, v):
             self._graph.remove_edge(u, v)
             self._sync_items()
+
+    @Slot(result=str)
+    def getAdjacencyMatrix(self):
+        if self._graph.number_of_nodes() == 0:
+            return "El grafo debe tener al menos un nodo."
+
+        matrix = nx.adjacency_matrix(self._graph, weight=None).toarray()
+        matrix_string = ""
+
+        for row in matrix:
+            matrix_string += f"{str(row)}\n"
+
+        return matrix_string.replace(".", "")
+
+    @Slot(result=str)
+    def getIncidenceMatrix(self):
+        if self._graph.number_of_nodes() < 2:
+            return "El grafo debe tener al menos dos nodos y una arista."
+
+        if nx.is_empty(self._graph):
+            return "El grafo no contiene aristas."
+
+        matrix = nx.incidence_matrix(self._graph).toarray()
+        matrix_string = ""
+
+        for row in matrix:
+            matrix_string += f"{str(row)}\n"
+
+        return matrix_string.replace(".", "")
+
+    def _update_element_color(self, element_type, element_id, color_value):
+        for i, item in enumerate(self._items):
+            if (
+                element_type == "node"
+                and item.get("type") == "node"
+                and item.get("id") == element_id
+            ):
+                item["color"] = color_value
+                idx = self.index(i, 0)
+                self.dataChanged.emit(idx, idx, [self.ColorRole])
+                break
+            elif element_type == "edge" and item.get("type") == "edge":
+                target_id = f"{element_id[0]}-{element_id[1]}"
+                reverse_id = f"{element_id[1]}-{element_id[0]}"
+                current_id = f"{item.get('u')}-{item.get('v')}"
+                if current_id == target_id or current_id == reverse_id:
+                    item["color"] = color_value
+                    idx = self.index(i, 0)
+                    self.dataChanged.emit(idx, idx, [self.ColorRole])
+                    break
+
+    @Slot(result=str)
+    def getMST(self):
+        if self._graph.number_of_nodes() < 2:
+            return "El grafo debe tener al menos dos nodos y una arista."
+
+        if (
+            len(nx.get_edge_attributes(self._graph, "weight"))
+            != self._graph.number_of_edges()
+        ):
+            return "Todos los nodos deben tener un peso."
+
+        if nx.is_negatively_weighted(self._graph):
+            return "Los pesos no pueden ser negativos."
+
+        if not nx.is_connected(self._graph):
+            return "El grafo debe ser conexo."
+
+        self.clearColors()
+
+        start_node = list(self._graph.nodes)[0]
+        visited_nodes = {start_node}
+        mst_edges = []
+        total_weight = 0.0
+
+        highlight_color = "#20D75B"
+
+        self._graph.nodes[start_node]["color"] = highlight_color
+        self._update_element_color("node", start_node, highlight_color)
+        QCoreApplication.processEvents()
+        time.sleep(0.5)
+
+        num_nodes = self._graph.number_of_nodes()
+
+        while len(visited_nodes) < num_nodes:
+            min_weight = float("inf")
+            best_edge = None
+            next_node = None
+
+            for u in visited_nodes:
+                for v, edge_data in self._graph[u].items():
+                    if v not in visited_nodes:
+                        weight = edge_data.get("weight", 0.0)
+                        if weight < min_weight:
+                            min_weight = weight
+                            best_edge = (u, v)
+                            next_node = v
+
+            if best_edge:
+                u, v = best_edge
+                visited_nodes.add(next_node)
+                mst_edges.append(best_edge)
+                total_weight += min_weight
+
+                self._graph.nodes[next_node]["color"] = highlight_color
+                self._graph[u][v]["color"] = highlight_color
+
+                self._update_element_color("edge", best_edge, highlight_color)
+                self._update_element_color("node", next_node, highlight_color)
+                QCoreApplication.processEvents()
+                time.sleep(0.5)
+            else:
+                break
+
+        return f"Peso Total: {total_weight}"
+
+    @Slot()
+    def clearColors(self):
+        for n in self._graph.nodes:
+            if "color" in self._graph.nodes[n]:
+                del self._graph.nodes[n]["color"]
+        for u, v in self._graph.edges:
+            if "color" in self._graph[u][v]:
+                del self._graph[u][v]["color"]
+        self._sync_items()
+
+    @Slot(result=bool)
+    def isGraphEmpty(self):
+        return self._graph.number_of_nodes() == 0
+
+    @Slot(result=bool)
+    def hasColors(self):
+        for n in self._graph.nodes:
+            if "color" in self._graph.nodes[n]:
+                return True
+        for u, v in self._graph.edges:
+            if "color" in self._graph[u][v]:
+                return True
+        return False
+
+    @Slot()
+    def clearGraph(self):
+        self._graph.clear()
+        self._sync_items()

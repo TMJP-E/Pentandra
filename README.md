@@ -10,35 +10,33 @@ Pentandra permite crear grafos en pantalla con vertices y aristas, indicar nombr
 
 ### Funcionales
 
-- [ ] El usuario puede crear un vertice en pantalla haciendo doble click en el panel del grafo.
+- [X] El usuario puede crear un vertice en pantalla haciendo doble click en el panel del grafo.
 
-- [ ] El usuario puede seleccionar cualquier vertice o arista haciendo click en el.
+- [X] El usuario puede seleccionar cualquier vertice o arista haciendo click en el.
 
-- [ ] El usuario puede unir dos vertices, seleccionando uno de ellos y haciendo click en el otro, generando una arista.
+- [X] El usuario puede unir dos vertices, seleccionando uno de ellos y haciendo click en el otro, generando una arista.
 
-- [ ] El usuario, al seleccionar un vertice, puede ingresar un nombre para el vertice, mediante un recuadro de entrada.
+- [X] El usuario, al seleccionar un vertice, puede ingresar un nombre para el vertice, mediante un recuadro de entrada.
 
-- [ ] El usuario, al seleccionar una arista, puede ingresar una ponderacion de la arista, mediante un recuadro de entrada.
+- [X] El usuario, al seleccionar una arista, puede ingresar una ponderacion de la arista, mediante un recuadro de entrada.
 
-- [ ] El usuario, al seleccionar una vertice o arista, puede eliminarlo.
+- [X] El usuario, al seleccionar una vertice o arista, puede eliminarlo.
 
-- [ ] El usuario puede calcular la matriz de adjacencia del grafo creado.
+- [X] El usuario puede calcular la matriz de adjacencia del grafo creado.
 
-- [ ] El usuario puede calcular la matriz de incidencia del grafo creado.
+- [X] El usuario puede calcular la matriz de incidencia del grafo creado.
 
-- [ ] El usuario puede calcular el arbol de expansion minima y el peso minimo del grafo creado.
+- [X] El usuario puede calcular el arbol de expansion minima y el peso minimo del grafo creado.
 
 ### No Funcionales
 
-- [ ] Pentandra debe desplegar todos los elementos de un grafo simple no dirigido, estos elementos son vertices, aristas, nombres de vertices y ponderaciones de aristas.
+- [X] Pentandra debe desplegar todos los elementos de un grafo simple no dirigido, estos elementos son vertices, aristas, nombres de vertices y ponderaciones de aristas.
 
-- [ ] Pentandra debe mostrar el grafo en un panel dedicado.
+- [X] Pentandra debe mostrar el grafo en un panel dedicado.
 
-- [ ] Pentandra debe manejar las interacciones con el grafo mediante el panel dedicado y recuadros de entrada.
+- [X] Pentandra debe manejar las interacciones con el grafo mediante el panel dedicado y recuadros de entrada.
 
-- [ ] Pentandra, al calcular el arbol de expansion minima, debe mostrar cada iteracion realizada.
-
-- [ ] Pentandra debe espaciar nodos que se encuentren muy cercanos.
+- [X] Pentandra, al calcular el arbol de expansion minima, debe mostrar cada iteracion realizada.
 
 ### Sistema
 

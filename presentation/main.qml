@@ -62,6 +62,7 @@ ApplicationWindow {
                         required property string content
                         required property string source
                         required property string objectName
+                        required property string actionType
 
                         display: AbstractButton.TextUnderIcon
                         Layout.preferredHeight: optionsContainer.width - 1 * contentContainer.spacer
@@ -71,6 +72,17 @@ ApplicationWindow {
                         font.family: futuraBook.font.family
                         font.pointSize: 12
                         font.bold: true
+                        onClicked: {
+                            actionTitle.content = content;
+                            if (actionType === "adjacency") {
+                                actionResults.text = graphModel.getAdjacencyMatrix();
+                            } else if (actionType === "incidence") {
+                                actionResults.text = graphModel.getIncidenceMatrix();
+                            } else if (actionType === "mst") {
+                                actionResults.text = "Calculando...";
+                                mstDelayTimer.start();
+                            }
+                        }
 
                         icon {
                             source: source
@@ -88,21 +100,24 @@ ApplicationWindow {
 
                     model: ListModel {
                         ListElement {
-                            content: "Adjacencia"
+                            content: "Adyacencia"
                             source: "resources/icons/matrix-adjacency.svg"
                             objectName: "adjacencyButton"
+                            actionType: "adjacency"
                         }
 
                         ListElement {
                             content: "Incidencia"
                             source: "resources/icons/matrix-incidence.svg"
                             objectName: "incidenceButton"
+                            actionType: "incidence"
                         }
 
                         ListElement {
-                            content: "Arbol Minimo"
+                            content: "Árbol Mínimo"
                             source: "resources/icons/tree.svg"
                             objectName: "mstButton"
+                            actionType: "mst"
                         }
 
                     }
@@ -124,7 +139,7 @@ ApplicationWindow {
             Text {
                 id: actionTitle
 
-                property string content: "Title"
+                property string content: "Resultados"
 
                 font.family: futuraBook.font.family
                 text: content
@@ -135,10 +150,15 @@ ApplicationWindow {
             }
 
             Text {
-                wrapMode: Text.WordWrap
-                font.pointSize: 24
-                Layout.alignment: Qt.AlignHCenter
+                id: actionResults
+
                 Layout.fillHeight: true
+                Layout.fillWidth: true
+                wrapMode: Text.WordWrap
+                font.family: "Courier"
+                font.pointSize: 16
+                text: "Seleccione una opción del panel izquierdo."
+                horizontalAlignment: Text.AlignLeft
             }
 
         }
@@ -151,13 +171,100 @@ ApplicationWindow {
             Layout.fillWidth: true
             Layout.alignment: Qt.AlignTop
 
-            Text {
-                text: "Grafo"
-                font.pointSize: 24
-                font.bold: true
-                font.family: futuraBook.font.family
-                padding: 24
+            RowLayout {
+                id: graphTitleContainer
+
+                property bool graphIsEmpty: true
+                property bool graphHasColors: false
+
                 Layout.alignment: Qt.AlignHCenter
+                spacing: 16
+
+                Connections {
+                    function onModelReset() {
+                        graphTitleContainer.graphIsEmpty = graphModel.isGraphEmpty();
+                        graphTitleContainer.graphHasColors = graphModel.hasColors();
+                    }
+
+                    function onDataChanged() {
+                        graphTitleContainer.graphIsEmpty = graphModel.isGraphEmpty();
+                        graphTitleContainer.graphHasColors = graphModel.hasColors();
+                    }
+
+                    target: graphModel
+                }
+
+                Text {
+                    text: "Grafo"
+                    font.pointSize: 24
+                    font.bold: true
+                    font.family: futuraBook.font.family
+                    Layout.alignment: Qt.AlignVCenter
+                }
+
+                Button {
+                    id: cleanColorsButton
+
+                    property color fillColor: (enabled) ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
+
+                    enabled: !parent.graphIsEmpty && parent.graphHasColors
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 36
+                    Layout.preferredWidth: 36
+                    onClicked: {
+                        graphModel.clearColors();
+                        if (actionTitle.content === "Árbol Mínimo")
+                            actionResults.text = "Seleccione una opción del panel izquierdo.";
+
+                    }
+
+                    icon {
+                        source: "resources/icons/clean.svg"
+                        height: 24
+                        width: 24
+                        color: fillColor
+                    }
+
+                    background: Rectangle {
+                        radius: 4
+                        border.color: parent.fillColor
+                        border.width: 4
+                    }
+
+                }
+
+                Button {
+                    id: clearGraphButton
+
+                    property color fillColor: (enabled) ? (down ? Qt.darker("#D72020", 1.5) : "#D72020") : "#D9D9D9"
+
+                    enabled: !parent.graphIsEmpty
+                    Layout.alignment: Qt.AlignVCenter
+                    Layout.preferredHeight: 36
+                    Layout.preferredWidth: 36
+                    onClicked: {
+                        graphModel.clearGraph();
+                        windowRoot.selectedNodeId = "";
+                        windowRoot.selectedEdgeId = "";
+                        graphElementInput.text = "";
+                        actionResults.text = "Seleccione una opción del panel izquierdo.";
+                    }
+
+                    icon {
+                        source: "resources/icons/trashcan.svg"
+                        height: 24
+                        width: 24
+                        color: fillColor
+                    }
+
+                    background: Rectangle {
+                        radius: 4
+                        border.color: parent.fillColor
+                        border.width: 4
+                    }
+
+                }
+
             }
 
             Rectangle {
@@ -189,6 +296,7 @@ ApplicationWindow {
                             property string type: elementType
                             property string idName: elementId
                             property string name: elementName
+                            property color treeColor: modelColor
                             property double xPoint: modelXPoint
                             property double yPoint: modelYPoint
                             property double weight: modelWeight
@@ -213,7 +321,7 @@ ApplicationWindow {
                             y: yPoint - radius
                             width: 24
                             height: 24
-                            color: "#619FF0"
+                            color: (treeColor !== undefined && treeColor !== "") ? treeColor : "#619FF0"
                             border.width: windowRoot.selectedNodeId === idName ? 2 : 0
                             onXChanged: {
                                 if (mouseArea.drag.active)
@@ -269,7 +377,7 @@ ApplicationWindow {
                         id: edgeComponent
 
                         Item {
-                            id: edgeContianer
+                            id: edgeContainer
 
                             readonly property real dx: endXPoint - startXPoint
                             readonly property real dy: endYPoint - startYPoint
@@ -280,8 +388,8 @@ ApplicationWindow {
 
                             Shape {
                                 ShapePath {
-                                    strokeColor: windowRoot.selectedEdgeId === idName ? '#041763' : "#000000"
-                                    strokeWidth: 2
+                                    strokeColor: (treeColor !== undefined && treeColor !== "") ? treeColor : (windowRoot.selectedEdgeId === idName ? "#050C29" : "#000000")
+                                    strokeWidth: (treeColor !== undefined && treeColor !== "") ? 4 : 2
                                     startX: startXPoint
                                     startY: startYPoint
 
@@ -298,9 +406,9 @@ ApplicationWindow {
                                     x: startXPoint
                                     y: startYPoint - height / 2
                                     color: "transparent"
-                                    width: edgeContianer.distance
+                                    width: edgeContainer.distance
                                     height: 12
-                                    rotation: edgeContianer.angle
+                                    rotation: edgeContainer.angle
                                     transformOrigin: Item.Left
 
                                     MouseArea {
@@ -352,10 +460,20 @@ ApplicationWindow {
                     padding: 4
                 }
 
+                DoubleValidator {
+                    id: edgeWeightValidator
+
+                    bottom: 0
+                    top: 1e+06
+                    decimals: 2
+                    notation: DoubleValidator.StandardNotation
+                    locale: "C"
+                }
+
                 TextField {
                     id: graphElementInput
 
-                    enabled: windowRoot.selectedNodeId !== "" || windowRoot.selectedEdgeId !== ""
+                    enabled: windowRoot.selectedNodeId || windowRoot.selectedEdgeId
                     font.pointSize: 18
                     font.bold: true
                     color: "#000000"
@@ -364,6 +482,7 @@ ApplicationWindow {
                     onActiveFocusChanged: {
                         !(windowRoot.selectedNodeId || windowRoot.selectedEdgeId) ? text = "" : text = text;
                     }
+                    validator: windowRoot.selectedEdgeId ? edgeWeightValidator : null
 
                     background: Rectangle {
                         implicitHeight: 36
@@ -379,7 +498,7 @@ ApplicationWindow {
 
                     property color fillColor: (enabled) ? (down ? Qt.darker("#4ED433", 1.5) : "#4ED433") : "#D9D9D9"
 
-                    enabled: (windowRoot.selectedNodeId || windowRoot.selectedEdgeId) && graphElementInput.text !== ""
+                    enabled: (windowRoot.selectedNodeId || windowRoot.selectedEdgeId) && graphElementInput.text !== "" && (windowRoot.selectedEdgeId === "" || (!isNaN(parseFloat(graphElementInput.text)) && isFinite(graphElementInput.text) && parseFloat(graphElementInput.text) >= 0))
                     onClicked: {
                         if (windowRoot.selectedNodeId) {
                             graphModel.setNodeName(parseInt(windowRoot.selectedNodeId), graphElementInput.text);
@@ -446,6 +565,16 @@ ApplicationWindow {
 
         }
 
+    }
+
+    Timer {
+        id: mstDelayTimer
+
+        interval: 50
+        repeat: false
+        onTriggered: {
+            actionResults.text = graphModel.getMST();
+        }
     }
 
     header: Rectangle {
